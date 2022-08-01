@@ -220,7 +220,7 @@ function get_template_uuid() {
 
 function get_distribution() {
     echo
-    local DISTS=( CentOS Ubuntu Debian )
+    local DISTS=( CentOS Ubuntu Debian CoreOS )
     # try to guess name of distribution
     for DISTRIBUTION in ${DISTS[*]}; do
         if echo $TEMPLATE_NAME_LABEL | grep -qi $DISTRIBUTION; then
@@ -260,7 +260,8 @@ function get_version() {
 function get_architecture() {
     echo
     # try to guess architecture
-    CPU_ARCH=$(echo $TEMPLATE_NAME_LABEL | sed -e '/32\|64/!d; s/^.*\(32\|64\)-bit.*$/\1/')
+    #CPU_ARCH=$(echo $TEMPLATE_NAME_LABEL | sed -e '/32\|64/!d; s/^.*\(32\|64\)-bit.*$/\1/')
+    CPU_ARCH=64
     if [ -n "$CPU_ARCH" ]; then
         echo "This template appears to be for a ${CPU_ARCH}-bit installation."
     else
@@ -298,7 +299,8 @@ function get_install_repository() {
         INSTALL_REPO_URL="$INSTALL_REPO_URL_BASE/$(echo $DISTRIBUTION | tr 'A-Z' 'a-z')"
     else
         echo -e "\nEnter URL of installation repository: \c"
-        read INSTALL_REPO_URL
+        #read INSTALL_REPO_URL
+        INSTALL_REPO_URL=http://192.168.22.1/ocp4/
     fi
 }
 
@@ -311,12 +313,13 @@ function get_kickstart_url() {
 function get_preseed_url() {
     [ -n "$PRESEED_URL" ] && return
     echo -e "\nEnter URL of preseed file (empty if none): \c"
-    read PRESEED_URL
+    #read PRESEED_URL
+    PRESEED_URL=""
 }
 
 function get_pv_args() {
     case $DISTRIBUTION in
-        CentOS)
+        CentOS|CoreOS)
             if [ -n "$KICKSTART_URL" ]; then
                 PV_ARGS="ks=$KICKSTART_URL ksdevice=bootif"
             fi
@@ -335,13 +338,13 @@ function get_pv_args() {
 function get_log_commands() {
     [ -n "$LOG" ] && return
     LOG="$VM_NAME_LABEL.log"
-    echo
-    if prompt "Log xe commands to $LOG"; then
-        echo "Logging commands to $LOG."
-        [ -e "$LOG" ] && rm -i "$LOG"
-    else
-        LOG=""
-    fi
+    #echo
+    #if prompt "Log xe commands to $LOG"; then
+    #    echo "Logging commands to $LOG."
+    #    [ -e "$LOG" ] && rm -i "$LOG"
+    #else
+    #    LOG=""
+    #fi
 }
 
 ########################################################################
@@ -585,17 +588,17 @@ PV args: $PV_ARGS
 
 EOF
 
-    if prompt "Immediately start VM for installation"; then
-        START_NOW=1
-    else
+    #if prompt "Immediately start VM for installation"; then
+    #    START_NOW=1
+    #else
         START_NOW=0
-    fi
-
-    echo
-    if ! prompt "Continue"; then
-        echo "Quitting"
-        exit 0
-    fi
+    #fi
+#
+#    echo
+#    if ! prompt "Continue"; then
+#        echo "Quitting"
+#        exit 0
+#    fi
 }
 
 function perform_installation() {
